@@ -11,7 +11,7 @@ Requires OneAgent version version 1.177 or higher
 
 ## Installation
 
-Available from GitHub (via cloning)
+Available from GitHub (via cloning) or via Puppet forge [luisescobar/dynatraceoneagent](https://forge.puppet.com/dynatrace/dynatraceoneagent)
 
 ## Usage
 
@@ -24,7 +24,7 @@ Available from GitHub (via cloning)
         proxy       => 'no_proxy',
     }
 
-    #Sample latest OneAgent version installation using a SAAS on a windows host
+    #Sample latest OneAgent version installation using a SAAS tenant on a windows host
     class { 'dynatraceoneagent':
         tenant_url  => 'https://[your-environment-id}].live.dynatrace.com',
         paas_token  => '{your-paas-token}',

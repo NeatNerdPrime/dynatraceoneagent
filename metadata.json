@@ -2,9 +2,10 @@
   "name": "luisescobar-dynatraceoneagent",
   "version": "0.1.0",
   "author": "luisescobar",
-  "summary": "",
+  "summary": "This module downloads and installs the dynatrace one agent",
   "license": "MIT",
-  "source": "",
+  "source": "https://github.com/luisescobar89/dynatraceoneagent",
+  "project_page": "https://github.com/luisescobar89/dynatraceoneagent",
   "dependencies": [
 
   ],
