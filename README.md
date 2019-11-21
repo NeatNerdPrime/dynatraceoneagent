@@ -20,7 +20,7 @@ Available from GitHub (via cloning) or via Puppet forge [luisescobar/dynatraceon
     class { 'dynatraceoneagent':
         tenant_url  => 'https://{your-domain}/e/{your-environment-id}',
         paas_token  => '{{your-paas-token}',
-        version     => 'latest',
+        version     => '1.181.63.20191105-161318',
         host_group  => 'linux_servers',
         proxy       => 'no_proxy',
     }
