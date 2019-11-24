@@ -8,7 +8,7 @@ This module installs the OneAgent on Linux, Windows and AIX Operating Systems
 
 Requires [puppet/archive](https://forge.puppet.com/puppet/archive)
 
-Requires OneAgent version version 1.177 or higher
+Requires OneAgent version 1.177 or higher
 
 ## Installation
 
