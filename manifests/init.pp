@@ -21,8 +21,8 @@
 #                                    Windows   : C:\\Windows\\Temp\\
 #
 #   Array of additional parameters to pass to the installer
-#   * Default parameters already defined params.pp: 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1'
-#   Additional Parameters should be defined as follows (will override default params):
+#   * Default OneAgent Install parameters already defined in params.pp: 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1'
+#   Additional OneAgent install parameters should be defined as follows (will override default params):
 #   oneagent_params_array => [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1', 'HOST_GROUP=windows_servers' ]
 #
 #   Refer to the Customize OneAgent installation documentation on https://www.dynatrace.com/support/help/technology-support/operating-systems/
