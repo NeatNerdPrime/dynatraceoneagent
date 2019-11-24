@@ -29,24 +29,24 @@ class dynatraceoneagent::params {
         $os_type        = 'windows'
         $download_dir   = "C:\\Windows\\Temp\\"
         #Parameters for Windows OneAgent Installer
-        $install_dir    = "C:\\Program Files (x86)\\dynatrace\\oneagent\\"
         $service_name   = 'Dynatrace OneAgent'
         $provider       = 'powershell'
+        $check_service  = "if(Get-Service \"${service_name}\") { exit 0 } else { exit 1 }"
     } elsif $::osfamily == 'AIX' {
         #Parameters for AIX OneAgent Download
         $os_type        = 'aix'
         $download_dir   = '/tmp/'
         #Parameters for AIX OneAgent Installer
-        $install_dir    = '/opt/dynatrace/oneagent/'
         $service_name   = 'oneagent'
         $provider       = 'shell'
+        $check_service  = 'test -f /opt/dynatrace/oneagent/agent/agent.state'
     } elsif $::kernel == 'Linux' {
         #Parameters for Linux OneAgent Download
         $os_type        = 'unix'
         $download_dir   = '/tmp/'
         #Parameters for Linux OneAgent Installer
-        $install_dir    = '/opt/dynatrace/oneagent/'
         $service_name   = 'oneagent'
         $provider       = 'shell'
+        $check_service  = 'test -f /opt/dynatrace/oneagent/agent/agent.state'
     }
 }

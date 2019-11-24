@@ -36,10 +36,10 @@ class dynatraceoneagent (
   String $os_type                  = $dynatraceoneagent::params::os_type,
 
 #OneAgent Install Parameters
-  String $install_dir              = $dynatraceoneagent::params::install_dir,
   String $download_dir             = $dynatraceoneagent::params::download_dir,
   String $service_name             = $dynatraceoneagent::params::service_name,
   String $provider                 = $dynatraceoneagent::params::provider,
+  String $check_service            = $dynatraceoneagent::params::check_service,
   Optional[String] $param_1        = $dynatraceoneagent::params::param_1,
   Optional[String] $param_2        = $dynatraceoneagent::params::param_2,
   Optional[String] $param_3        = $dynatraceoneagent::params::param_3,
@@ -60,25 +60,18 @@ class dynatraceoneagent (
     }
 
     if $::osfamily == 'Windows' {
-      $created_dir    = "${install_dir}agent\\agent.state"
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.exe"
       $download_path  = "${download_dir}${filename}"
-      $command        = "cmd.exe /c ${download_path} ${param_1} ${param_2} ${param_3} ${param_4} ${param_5} ${param_6} --quiet"
+      $command        = "cmd.exe /c ${download_path} ${param_1} ${param_2} ${param_3} ${param_4} ${param_5} ${param_6} ${param_7} ${param_8} ${param_9} ${param_10} --quiet"
     } elsif $::osfamily == 'AIX' {
-      $created_dir    = "${install_dir}agent/agent.state"
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} HOST_GROUP=${host_group} PROXY=${proxy} INFRA_ONLY=${infra_only}"
+      $command        = "/bin/sh ${download_path} ${param_1} ${param_2} ${param_3} ${param_4} ${param_5} ${param_6} ${param_7} ${param_8} ${param_9} ${param_10}"
     } elsif $::kernel == 'linux'  {
-      $created_dir    = "${install_dir}agent/agent.state"
       $filename       = "Dynatrace-OneAgent-${::kernel}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} HOST_GROUP=${host_group} PROXY=${proxy} INFRA_ONLY=${infra_only} APP_LOG_CONTENT_ACCESS=${app_log_content_access}"
+      $command        = "/bin/sh ${download_path} ${param_1} ${param_2} ${param_3} ${param_4} ${param_5} ${param_6} ${param_7} ${param_8} ${param_9} ${param_10}"
     }
-
-  notify { "command is: ${command}": }
-  notify { "download_link is: ${download_link}": }
-  notify { "download_path is: ${download_path}": }
 
   contain dynatraceoneagent::install
   contain dynatraceoneagent::service
