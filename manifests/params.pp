@@ -13,16 +13,7 @@ class dynatraceoneagent::params {
     $installer_type     = 'default'
 
     #OneAgent Install Parameters
-    $param_1  = 'INFRA_ONLY=0'
-    $param_2  = 'APP_LOG_CONTENT_ACCESS=1'
-    $param_3  = undef
-    $param_4  = undef
-    $param_5  = undef
-    $param_6  = undef
-    $param_7  = undef
-    $param_8  = undef
-    $param_9  = undef
-    $param_10 = undef
+    $oneagent_params_array  = [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1' ]
 
     if $::osfamily == 'Windows' {
         #Parameters for Windows OneAgent Download

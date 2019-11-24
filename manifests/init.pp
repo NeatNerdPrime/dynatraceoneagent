@@ -16,42 +16,37 @@
 #   * $installer_type             => The type of the installer - default is default
 #
 #   Parameters for the OneAgent Installer:
-#   * download_dir                => OneAgent installer file download directory   
+#   * download_dir                => OneAgent installer file download directory. Defaults are
+#                                    Linux/AIX : /tmp/
+#                                    Windows   : C:\\Windows\\Temp\\
 #
-#   Up to 10 parameters can be added
-#   Default parameters already defined (can be overriden):
+#   Array of additional parameters to pass to the installer
+#   * Default parameters already defined params.pp: 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1'
+#   Additional Parameters should be defined as follows (will override default params):
+#   oneagent_params_array => [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1', 'HOST_GROUP=windows_servers' ]
 #
-#    * $param_1                  => INFRA_ONLY=0
-#    * $param_2                  => APP_LOG_CONTENT_ACCESS=1
 #   Refer to the Customize OneAgent installation documentation on https://www.dynatrace.com/support/help/technology-support/operating-systems/
 
 class dynatraceoneagent (
 
 # OneAgent Download Parameters
-  $tenant_url                      = $dynatraceoneagent::params::tenant_url,
-  $paas_token                      = $dynatraceoneagent::params::paas_token,
-  String $version                  = $dynatraceoneagent::params::version,
-  String $arch                     = $dynatraceoneagent::params::arch,
-  String $installer_type           = $dynatraceoneagent::params::installer_type,
-  String $os_type                  = $dynatraceoneagent::params::os_type,
+  $tenant_url                           = $dynatraceoneagent::params::tenant_url,
+  $paas_token                           = $dynatraceoneagent::params::paas_token,
+  String $version                       = $dynatraceoneagent::params::version,
+  String $arch                          = $dynatraceoneagent::params::arch,
+  String $installer_type                = $dynatraceoneagent::params::installer_type,
+  String $os_type                       = $dynatraceoneagent::params::os_type,
 
 #OneAgent Install Parameters
-  String $download_dir             = $dynatraceoneagent::params::download_dir,
-  String $service_name             = $dynatraceoneagent::params::service_name,
-  String $provider                 = $dynatraceoneagent::params::provider,
-  String $check_service            = $dynatraceoneagent::params::check_service,
-  Optional[String] $param_1        = $dynatraceoneagent::params::param_1,
-  Optional[String] $param_2        = $dynatraceoneagent::params::param_2,
-  Optional[String] $param_3        = $dynatraceoneagent::params::param_3,
-  Optional[String] $param_4        = $dynatraceoneagent::params::param_4,
-  Optional[String] $param_5        = $dynatraceoneagent::params::param_5,
-  Optional[String] $param_6        = $dynatraceoneagent::params::param_6,
-  Optional[String] $param_7        = $dynatraceoneagent::params::param_7,
-  Optional[String] $param_8        = $dynatraceoneagent::params::param_8,
-  Optional[String] $param_9        = $dynatraceoneagent::params::param_9,
-  Optional[String] $param_10       = $dynatraceoneagent::params::param_10,
+  String $download_dir                   = $dynatraceoneagent::params::download_dir,
+  String $service_name                   = $dynatraceoneagent::params::service_name,
+  String $provider                       = $dynatraceoneagent::params::provider,
+  String $check_service                  = $dynatraceoneagent::params::check_service,
+  Optional[Array] $oneagent_params_array = $dynatraceoneagent::params::oneagent_params_array,
 
 ) inherits dynatraceoneagent::params {
+
+    $oneagent_params = join($oneagent_params_array, ' ' )
 
     if $version == 'latest' {
       $download_link  = "${tenant_url}/api/v1/deployment/installer/agent/${os_type}/${installer_type}/latest/?Api-Token=${paas_token}&flavor=default&arch=${arch}"
@@ -62,16 +57,20 @@ class dynatraceoneagent (
     if $::osfamily == 'Windows' {
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.exe"
       $download_path  = "${download_dir}${filename}"
-      $command        = "cmd.exe /c ${download_path} ${param_1} ${param_2} ${param_3} ${param_4} ${param_5} ${param_6} ${param_7} ${param_8} ${param_9} ${param_10} --quiet"
+      $command        = "cmd.exe /c ${download_path} ${oneagent_params} --quiet"
     } elsif $::osfamily == 'AIX' {
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} ${param_1} ${param_2} ${param_3} ${param_4} ${param_5} ${param_6} ${param_7} ${param_8} ${param_9} ${param_10}"
+      $command        = "/bin/sh ${download_path} ${oneagent_params}"
     } elsif $::kernel == 'linux'  {
       $filename       = "Dynatrace-OneAgent-${::kernel}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} ${param_1} ${param_2} ${param_3} ${param_4} ${param_5} ${param_6} ${param_7} ${param_8} ${param_9} ${param_10}"
+      $command        = "/bin/sh ${download_path} ${oneagent_params}"
     }
+
+  #notify { "command is: ${command}": }
+  #notify { "download_link is: ${download_link}": }
+  #notify { "download_path is: ${download_path}": }
 
   contain dynatraceoneagent::install
   contain dynatraceoneagent::service
