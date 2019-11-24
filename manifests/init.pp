@@ -16,41 +16,37 @@
 #   * $installer_type             => The type of the installer - default is default
 #
 #   Parameters for the OneAgent Installer:
+#   * download_dir                => OneAgent installer file download directory. Defaults are
+#                                    Linux/AIX : /tmp/
+#                                    Windows   : C:\\Windows\\Temp\\
 #
-#   * $root_drive                 => For Windows only, specify the drive in which to install the oneagent. - default is C:
-#   * $host_group                 => The name of a group you want to assign the host to. The host group string can only contain 
-#                                    alphanumeric characters, hyphens, underscores, and periods. It must not start with dt. and the 
-#                                    maximum length is 100 characters.
-#   * $proxy                      => The address of the proxy server. Use the IP address or a name. Add the port number following a colon, 
-#                                    for example PROXY=172.1.1.128:8080. We also support IPv6 
-#                                    addresses. To let the installer automatically detect proxy details, use PROXY=auto. default is auto
-#   * $app_log_content_access     => Windows and Linux only - When set to true, allows Dynatrace OneAgent to access log files for the 
-#                                    purpose of log monitoring. 
-#                                    Accepted values are (true, false) or (1, 0) - default is 0
-#   * $infra_only                 => Activates cloud infrastructure monitoring mode, in place of full-stack monitoring mode. With this 
-#                                    approach, you receive infrastructure-only health data, with no application or user performance data. 
-#                                    Accepted values are 0 (deactivated) and 1 (activated) - default is 0
+#   Array of additional parameters to pass to the installer
+#   * Default OneAgent Install parameters already defined in params.pp: 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1'
+#   Additional OneAgent install parameters should be defined as follows (will override default params):
+#   oneagent_params_array => [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1', 'HOST_GROUP=windows_servers' ]
+#
+#   Refer to the Customize OneAgent installation documentation on https://www.dynatrace.com/support/help/technology-support/operating-systems/
 
 class dynatraceoneagent (
 
 # OneAgent Download Parameters
-  $tenant_url                      = undef,
-  $paas_token                      = undef,
-  String $version                  = 'latest',
-  String $arch                     = 'all',
-  String $installer_type           = 'default',
-  String $os_type                  = $dynatraceoneagent::params::os_type,
+  $tenant_url                           = $dynatraceoneagent::params::tenant_url,
+  $paas_token                           = $dynatraceoneagent::params::paas_token,
+  String $version                       = $dynatraceoneagent::params::version,
+  String $arch                          = $dynatraceoneagent::params::arch,
+  String $installer_type                = $dynatraceoneagent::params::installer_type,
+  String $os_type                       = $dynatraceoneagent::params::os_type,
 
 #OneAgent Install Parameters
-  String $root_drive               = 'C:',
-  Optional[String] $host_group     = undef,
-  Optional[String] $proxy          = undef,
-  String $infra_only               = '0',
-  String $app_log_content_access   = '1',
-  String $service_name             = $dynatraceoneagent::params::service_name,
-  String $provider                 = $dynatraceoneagent::params::provider,
+  String $download_dir                   = $dynatraceoneagent::params::download_dir,
+  String $service_name                   = $dynatraceoneagent::params::service_name,
+  String $provider                       = $dynatraceoneagent::params::provider,
+  String $check_service                  = $dynatraceoneagent::params::check_service,
+  Optional[Array] $oneagent_params_array = $dynatraceoneagent::params::oneagent_params_array,
 
 ) inherits dynatraceoneagent::params {
+
+    $oneagent_params = join($oneagent_params_array, ' ' )
 
     if $version == 'latest' {
       $download_link  = "${tenant_url}/api/v1/deployment/installer/agent/${os_type}/${installer_type}/latest/?Api-Token=${paas_token}&flavor=default&arch=${arch}"
@@ -59,27 +55,22 @@ class dynatraceoneagent (
     }
 
     if $::osfamily == 'Windows' {
-      $download_dir   = "${root_drive}\\Windows\\Temp\\"
-      $install_dir    = "${root_drive}\\Program Files (x86)\\dynatrace\\oneagent\\"
-      $created_dir    = "${install_dir}agent\\agent.state"
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.exe"
       $download_path  = "${download_dir}${filename}"
-      $command        = "cmd.exe /c ${download_path} HOST_GROUP=${host_group} PROXY=${proxy} INFRA_ONLY=${infra_only} APP_LOG_CONTENT_ACCESS=${app_log_content_access} --quiet"
+      $command        = "cmd.exe /c ${download_path} ${oneagent_params} --quiet"
     } elsif $::osfamily == 'AIX' {
-      $download_dir   = '/tmp/'
-      $install_dir    = '/opt/dynatrace/oneagent/'
-      $created_dir    = "${install_dir}agent/agent.state"
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} HOST_GROUP=${host_group} PROXY=${proxy} INFRA_ONLY=${infra_only}"
+      $command        = "/bin/sh ${download_path} ${oneagent_params}"
     } elsif $::kernel == 'linux'  {
-      $download_dir   = '/tmp/'
-      $install_dir    = '/opt/dynatrace/oneagent/'
-      $created_dir    = "${install_dir}agent/agent.state"
       $filename       = "Dynatrace-OneAgent-${::kernel}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} HOST_GROUP=${host_group} PROXY=${proxy} INFRA_ONLY=${infra_only} APP_LOG_CONTENT_ACCESS=${app_log_content_access}"
+      $command        = "/bin/sh ${download_path} ${oneagent_params}"
     }
+
+  #notify { "command is: ${command}": }
+  #notify { "download_link is: ${download_link}": }
+  #notify { "download_path is: ${download_path}": }
 
   contain dynatraceoneagent::install
   contain dynatraceoneagent::service
