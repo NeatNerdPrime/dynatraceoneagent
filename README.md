@@ -13,6 +13,7 @@ Requires OneAgent version 1.177 or higher
 ## Installation
 
 Available from GitHub (via cloning) or via Puppet forge [luisescobar/dynatraceoneagent](https://forge.puppet.com/luisescobar/dynatraceoneagent)
+
 Refer to the Customize OneAgent installation documentation on [Dynatrace Supported Operating Systems](https://www.dynatrace.com/support/help/technology-support/operating-systems/)
 
 ## Usage
