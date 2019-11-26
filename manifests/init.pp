@@ -21,7 +21,8 @@
 #                                    Windows   : C:\\Windows\\Temp\\
 #
 #   Array of additional parameters to pass to the installer
-#   * Default OneAgent Install parameters already defined in params.pp: 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1'
+#   * Default OneAgent Install parameters already defined in params.pp: [ 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1' ]
+#   For windows always make sure to add the --quiet install parameter: [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1', '--quiet' ]
 #   Additional OneAgent install parameters should be defined as follows (will override default params):
 #   oneagent_params_array => [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1', 'HOST_GROUP=windows_servers' ]
 #
@@ -42,6 +43,7 @@ class dynatraceoneagent (
   String $service_name                   = $dynatraceoneagent::params::service_name,
   String $provider                       = $dynatraceoneagent::params::provider,
   String $check_service                  = $dynatraceoneagent::params::check_service,
+  Boolean $reboot_system                 = $dynatraceoneagent::params::reboot_system,
   Optional[Array] $oneagent_params_array = $dynatraceoneagent::params::oneagent_params_array,
 
 ) inherits dynatraceoneagent::params {
@@ -57,7 +59,6 @@ class dynatraceoneagent (
     if $::osfamily == 'Windows' {
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.exe"
       $download_path  = "${download_dir}${filename}"
-      $command        = "cmd.exe /c ${download_path} ${oneagent_params} --quiet"
     } elsif $::osfamily == 'AIX' {
       $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
@@ -65,10 +66,9 @@ class dynatraceoneagent (
     } elsif $::kernel == 'linux'  {
       $filename       = "Dynatrace-OneAgent-${::kernel}-${version}.sh"
       $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} ${oneagent_params}"
+      $command        = "${download_path} ${oneagent_params}"
     }
 
-  #notify { "command is: ${command}": }
   #notify { "download_link is: ${download_link}": }
   #notify { "download_path is: ${download_path}": }
 

@@ -18,10 +18,12 @@ class dynatraceoneagent::install {
   }
 
   archive{ $download_path:
-    ensure  => present,
-    extract => false,
-    source  => $download_link,
-    path    => $download_path,
+    ensure         => present,
+    extract        => false,
+    source         => $download_link,
+    path           => $download_path,
+    allow_insecure => true,
+    require        => File[$download_dir],
   }
 
 }
