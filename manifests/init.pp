@@ -18,11 +18,10 @@
 #   Parameters for the OneAgent Installer:
 #   * download_dir                => OneAgent installer file download directory. Defaults are
 #                                    Linux/AIX : /tmp/
-#                                    Windows   : C:\\Windows\\Temp\\
+#                                    Windows   : C:\Windows\Temp\
 #
 #   Array of additional parameters to pass to the installer
-#   * Default OneAgent Install parameters already defined in params.pp: [ 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1' ]
-#   For windows always make sure to add the --quiet install parameter: [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1', '--quiet' ]
+#   * Default OneAgent Install parameters already defined in params.pp: 'INFRA_ONLY=0' 'APP_LOG_CONTENT_ACCESS=1'
 #   Additional OneAgent install parameters should be defined as follows (will override default params):
 #   oneagent_params_array => [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1', 'HOST_GROUP=windows_servers' ]
 #
@@ -42,13 +41,21 @@ class dynatraceoneagent (
   String $download_dir                   = $dynatraceoneagent::params::download_dir,
   String $service_name                   = $dynatraceoneagent::params::service_name,
   String $provider                       = $dynatraceoneagent::params::provider,
-  String $check_service                  = $dynatraceoneagent::params::check_service,
-  Boolean $reboot_system                 = $dynatraceoneagent::params::reboot_system,
-  Optional[Array] $oneagent_params_array = $dynatraceoneagent::params::oneagent_params_array,
+  String $default_install_dir            = $dynatraceoneagent::params::default_install_dir,
+  Hash $oneagent_params_hash             = $dynatraceoneagent::params::oneagent_params_hash,
+
+  Optional[Boolean] $reboot_system       = $dynatraceoneagent::params::reboot_system,
 
 ) inherits dynatraceoneagent::params {
 
-    $oneagent_params = join($oneagent_params_array, ' ' )
+  $oneagent_params_array   = $oneagent_params_hash.map |$key,$value| { "${key}=${value}" }
+  $oneagent_unix_params    = join($oneagent_params_array, ' ' )
+
+    if $oneagent_params_hash['INSTALL_PATH']{
+      $install_dir = $oneagent_params_hash['INSTALL_PATH']
+    } else {
+      $install_dir = $default_install_dir
+    }
 
     if $version == 'latest' {
       $download_link  = "${tenant_url}/api/v1/deployment/installer/agent/${os_type}/${installer_type}/latest/?Api-Token=${paas_token}&flavor=default&arch=${arch}"
@@ -57,18 +64,23 @@ class dynatraceoneagent (
     }
 
     if $::osfamily == 'Windows' {
-      $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.exe"
-      $download_path  = "${download_dir}${filename}"
+      $filename                = "Dynatrace-OneAgent-${::osfamily}-${version}.exe"
+      $download_path           = "${download_dir}${filename}"
+      $created_dir             = "${install_dir}\agent\agent.state"
     } elsif $::osfamily == 'AIX' {
-      $filename       = "Dynatrace-OneAgent-${::osfamily}-${version}.sh"
-      $download_path  = "${download_dir}${filename}"
-      $command        = "/bin/sh ${download_path} ${oneagent_params}"
+      $filename                = "Dynatrace-OneAgent-${::osfamily}-${version}.sh"
+      $download_path           = "${download_dir}${filename}"
+      $command                 = "${download_path} ${oneagent_unix_params}"
+      $created_dir             = "${install_dir}/agent/agent.state"
     } elsif $::kernel == 'linux'  {
-      $filename       = "Dynatrace-OneAgent-${::kernel}-${version}.sh"
-      $download_path  = "${download_dir}${filename}"
-      $command        = "${download_path} ${oneagent_params}"
+      $filename                = "Dynatrace-OneAgent-${::kernel}-${version}.sh"
+      $download_path           = "${download_dir}${filename}"
+      $command                 = "${download_path} ${oneagent_unix_params}"
+      $created_dir             = "${install_dir}/agent/agent.state"
     }
-
+  
+  #notify { "params hash is :${$oneagent_params_hash}": }
+  #notify { "command is: ${command}": }
   #notify { "download_link is: ${download_link}": }
   #notify { "download_path is: ${download_path}": }
 
