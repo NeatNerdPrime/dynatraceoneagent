@@ -13,16 +13,22 @@ class dynatraceoneagent::params {
     $installer_type     = 'default'
 
     #OneAgent Install Parameters
-    $oneagent_params_array  = [ 'INFRA_ONLY=0', 'APP_LOG_CONTENT_ACCESS=1' ]
+    $install_dir        = undef
+    $oneagent_params_hash = {
+        'INFRA_ONLY'             => '0',
+        'APP_LOG_CONTENT_ACCESS' => '1',
+    }
+
+    $reboot_system      = false
 
     if $::osfamily == 'Windows' {
         #Parameters for Windows OneAgent Download
         $os_type        = 'windows'
-        $download_dir   = "C:\\Windows\\Temp\\"
+        $download_dir   = 'C:\\Windows\\Temp\\'
         #Parameters for Windows OneAgent Installer
         $service_name   = 'Dynatrace OneAgent'
-        $provider       = 'powershell'
-        $check_service  = "if(Get-Service \"${service_name}\") { exit 0 } else { exit 1 }"
+        $provider       = 'windows'
+        $default_install_dir = 'C:\\Program Files (x86)\\dynatrace\\oneagent'
     } elsif $::osfamily == 'AIX' {
         #Parameters for AIX OneAgent Download
         $os_type        = 'aix'
@@ -30,7 +36,7 @@ class dynatraceoneagent::params {
         #Parameters for AIX OneAgent Installer
         $service_name   = 'oneagent'
         $provider       = 'shell'
-        $check_service  = 'test -f /opt/dynatrace/oneagent/agent/agent.state'
+        $default_install_dir = '/opt/dynatrace/oneagent'
     } elsif $::kernel == 'Linux' {
         #Parameters for Linux OneAgent Download
         $os_type        = 'unix'
@@ -38,6 +44,6 @@ class dynatraceoneagent::params {
         #Parameters for Linux OneAgent Installer
         $service_name   = 'oneagent'
         $provider       = 'shell'
-        $check_service  = 'test -f /opt/dynatrace/oneagent/agent/agent.state'
+        $default_install_dir = '/opt/dynatrace/oneagent'
     }
 }

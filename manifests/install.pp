@@ -4,10 +4,13 @@
 #
 class dynatraceoneagent::install {
 
-  class { 'archive':
-    seven_zip_provider => '',
+  if !defined('archive') {
+    class { 'archive':
+      seven_zip_provider => '',
+    }
   }
 
+  $created_dir    = $dynatraceoneagent::created_dir
   $download_dir   = $dynatraceoneagent::download_dir
   $filename       = $dynatraceoneagent::filename
   $download_path  = $dynatraceoneagent::download_path
@@ -18,10 +21,13 @@ class dynatraceoneagent::install {
   }
 
   archive{ $download_path:
-    ensure  => present,
-    extract => false,
-    source  => $download_link,
-    path    => $download_path,
+    ensure         => present,
+    extract        => false,
+    source         => $download_link,
+    path           => $download_path,
+    allow_insecure => true,
+    require        => File[$download_dir],
+    creates        => $created_dir,
   }
 
 }
